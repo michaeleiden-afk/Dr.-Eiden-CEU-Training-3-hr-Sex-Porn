@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Quiz — Treating Sex & Pornography Addiction (3 CEUs)</title>
+  <style>
+    :root {
+      --bg: #0b0c10;
+      --card: #111217;
+      --muted: #a0a4b8;
+      --text: #eef2ff;
+      --accent: #7c9cff;
+      --good: #30c48d;
+      --bad: #ff5d73;
+      --warning: #f6c760;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial;
+      background: radial-gradient(1200px 800px at 10% -10%, #1a1b22, var(--bg));
+      color: var(--text);
+    }
+    .container { max-width: 960px; margin: 0 auto; padding: 28px 20px 64px; }
+    header { margin-bottom: 18px; }
+    h1 { font-size: 1.6rem; margin: 0 0 6px; }
+    .subtitle { color: var(--muted); font-size: .98rem; }
+    .card {
+      background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(0,0,0,.04));
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: 18px; padding: 18px; margin: 12px 0 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,.25);
+    }
+    .grid { display: grid; gap: 16px; }
+    @media (min-width: 720px) { .grid.cols-2 { grid-template-columns: 1fr 1fr; } }
+    label { display: block; margin: 6px 0 8px; font-weight: 600; }
+    input[type="text"], input[type="email"], select {
+      width: 100%; padding: 12px 14px; border-radius: 12px; border: 1px solid rgba(255,255,255,.14);
+      background: #0f1116; color: var(--text);
+    }
+    .btn {
+      display: inline-flex; align-items: center; gap: 10px;
+      background: var(--accent); color: #0b0c10; border: none; border-radius: 999px; padding: 12px 18px;
+      font-weight: 700; cursor: pointer; transition: transform .04s ease, opacity .2s;
+    }
+    .btn.ghost { background: transparent; color: var(--text); border: 1px solid rgba(255,255,255,.16); }
+    .btn:disabled { opacity: .6; cursor: not-allowed; }
+    .btn:hover { transform: translateY(-1px); }
+    .question { padding: 14px; border-radius: 14px; border: 1px solid rgba(255,255,255,.08); background: #0f1116; }
+    .question h3 { margin: 0 0 10px; font-size: 1.02rem; }
+    .choices { list-style: none; padding: 0; margin: 0; }
+    .choices li { margin: 8px 0; }
+    .choices input { margin-right: 8px; }
+    .notice { font-size: .96rem; color: var(--muted); }
+    .pill { display: inline-block; padding: 6px 10px; border-radius: 999px; font-size: .8rem; }
+    .pill.good { background: rgba(48,196,141,.18); color: var(--good); border: 1px solid rgba(48,196,141,.45); }
+    .pill.bad { background: rgba(255,93,115,.18); color: var(--bad); border: 1px solid rgba(255,93,115,.45); }
+    .pill.warn { background: rgba(246,199,96,.16); color: var(--warning); border: 1px solid rgba(246,199,96,.4); }
+    .footer { color: var(--muted); font-size: .9rem; margin-top: 18px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Quiz — Treating Sex & Pornography Addiction</h1>
+      <div class="subtitle">3.0 CE Hours · Pass threshold <strong>70%</strong> · Complete quiz → then feedback to receive certificate</div>
+    </header>
+
+    <!-- Participant Info -->
+    <section class="card" id="infoCard">
+      <h2 style="margin:0 0 8px">Participant Info</h2>
+      <div class="grid cols-2">
+        <div>
+          <label for="name">Full Name</label>
+          <input id="name" type="text" autocomplete="name" required placeholder="Jane Doe" />
+        </div>
+        <div>
+          <label for="email">Email</label>
+          <input id="email" type="email" autocomplete="email" required placeholder="you@example.com" />
+        </div>
+        <div>
+          <label for="license">License # (optional)</label>
+          <input id="license" type="text" placeholder="e.g., KY-123456" />
+        </div>
+        <div>
+          <label for="state">State (optional)</label>
+          <input id="state" type="text" placeholder="e.g., KY" />
+        </div>
+      </div>
+      <div class="notice" style="margin-top:10px">By starting the quiz you consent to recording your score for CE tracking.</div>
+      <div style="margin-top:14px; display:flex; gap:10px; flex-wrap:wrap">
+        <button class="btn" id="startBtn">Start Quiz</button>
+        <span class="pill warn">Course ID: COURSE_SEX-PORN-3CE</span>
+      </div>
+    </section>
+
+    <!-- Quiz -->
+    <section class="card" id="quizCard" style="display:none">
+      <div style="display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:6px">
+        <h2 style="margin:0">Quiz</h2>
+        <div class="pill">Questions: <span id="qCount">0</span></div>
+      </div>
+      <form id="quizForm"></form>
+      <div style="display:flex; gap:10px; margin-top:14px; flex-wrap:wrap">
+        <button class="btn" id="submitBtn">Submit Quiz</button>
+        <button class="btn ghost" id="resetBtn" type="button">Reset Answers</button>
+      </div>
+      <div class="notice" style="margin-top:10px">Tip: You can change answers before submitting.</div>
+    </section>
+
+    <!-- Results -->
+    <section class="card" id="resultsCard" style="display:none">
+      <h2 style="margin:0 0 8px">Results</h2>
+      <p id="scoreLine" style="margin:0 0 8px"></p>
+      <div id="passBlock" style="display:none; margin: 10px 0 0">
+        <span class="pill good">✔ Passed (≥ 70%)</span>
+        <p class="notice" style="margin:10px 0 0">Next step: complete the feedback survey to receive your certificate.</p>
+        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:12px">
+          <a class="btn" id="feedbackBtn" href="#" target="_blank" rel="noopener">Open Feedback Survey</a>
+          <button class="btn ghost" id="copyBtn" type="button">Copy Result Summary</button>
+        </div>
+      </div>
+      <div id="failBlock" style="display:none; margin: 10px 0 0">
+        <span class="pill bad">✖ Did not pass (&lt; 70%)</span>
+        <p class="notice" style="margin:10px 0 0">You may retake the quiz. Review the material and click Retake below.</p>
+        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:12px">
+          <button class="btn" id="retakeBtn" type="button">Retake Quiz</button>
+          <button class="btn ghost" id="copyBtn2" type="button">Copy Result Summary</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="footer">
+      <strong>Support:</strong> Eiden.integrative@gmail.com · This quiz is for <em>Treating Sex & Pornography Addiction (3 CEUs)</em> only.
+    </section>
+  </div>
+
+  <script>
+    const COURSE_ID = 'COURSE_SEX-PORN-3CE';
+    const PASS_THRESHOLD = 0.70;
+    const FEEDBACK_URL = 'https://docs.google.com/forms/d/1NdpGJW94LxfBIrKtFvRUeMhiitlg2DyEdYjBWOMm3Qg/viewform';
+
+    const QUESTIONS = [
+      { id:'q1', type:'mc', prompt:'What makes a process addiction different from an ingestive addiction?', choices:[
+        'People are addicted to a series of behaviors as opposed to one singular event',
+        'There is a cycle of preoccupation, ritualizing behaviors, compulsive behavior, and then the despair phase',
+        'Dopamine release occurs significantly in the preoccupation or thinking phase of the cycle',
+        'All of the above'], correctIndex:3 },
+      { id:'q2', type:'tf', prompt:'Sex addiction is a moral failing and not a disorder.', choices:['True','False'], correctIndex:1 },
+      { id:'q3', type:'tf', prompt:'Compulsive Sexual Behavior Disorder is an anticipated diagnosis relevant to sex addiction behaviors.', choices:['True','False'], correctIndex:0 },
+      { id:'q4', type:'tf', prompt:'180 days is the suggested length of time for an abstinence period for a sex addict in early recovery.', choices:['True','False'], correctIndex:1 },
+      { id:'q5', type:'tf', prompt:'Group therapy is not recommended for people with sex and pornography addiction.', choices:['True','False'], correctIndex:1 },
+      { id:'q6', type:'tf', prompt:'Sex addiction recovery can be defined using the 3 circles model.', choices:['True','False'], correctIndex:0 },
+      { id:'q7', type:'tf', prompt:'Sex addicts are disproportionately likely to have an insecure attachment style as compared to non-sex addicted populations.', choices:['True','False'], correctIndex:0 },
+      { id:'q8', type:'mc', prompt:'What causes the increase in arousal in the nervous system related to excessive screen use?', choices:[
+        'The abundance of sensory information being processed simultaneously by the brain',
+        'The increase in dopamine activity due to the access to novelty',
+        'The abundance of neural activity due to the repeated task switching',
+        'All of the above'], correctIndex:3 }
+    ];
+
+    const infoCard = document.getElementById('infoCard');
+    const quizCard = document.getElementById('quizCard');
+    const resultsCard = document.getElementById('resultsCard');
+    const startBtn = document.getElementById('startBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const copyBtn = document.getElementById('copyBtn');
+    const copyBtn2 = document.getElementById('copyBtn2');
+    const scoreLine = document.getElementById('scoreLine');
+    const passBlock = document.getElementById('passBlock');
+    const failBlock = document.getElementById('failBlock');
+    const qCount = document.getElementById('qCount');
+
+    const nameEl = document.getElementById('name');
+    const emailEl = document.getElementById('email');
+    const licenseEl = document.getElementById('license');
+    const stateEl = document.getElementById('state');
+
+    function renderQuiz() {
+      const form = document.getElementById('quizForm');
+      form.innerHTML = '';
+      qCount.textContent = QUESTIONS.length;
+
+      QUESTIONS.forEach((q, idx) => {
+        const qWrap = document.createElement('fieldset');
+        qWrap.className = 'question';
+        qWrap.role = 'group';
+        qWrap.setAttribute('aria-labelledby', `q-${idx}-label`);
+
+        const legend = document.createElement('h3');
+        legend.id = `q-${idx}-label`;
+        legend.textContent = `${idx + 1}. ${q.prompt}`;
+        qWrap.appendChild(legend);
+
+        const ul = document.createElement('ul');
+        ul.className = 'choices';
+
+        q.choices.forEach((choice, cIdx) => {
+          const li = document.createElement('li');
+          const id = `${q.id}-${cIdx}`;
+          const input = document.createElement('input');
+          input.type = 'radio';
+          input.name = q.id;
+          input.id = id;
+          input.value = cIdx.toString();
+          input.required = true;
+
+          const lbl = document.createElement('label');
+          lbl.setAttribute('for', id);
+          lbl.textContent = choice;
+
+          li.appendChild(input);
+          li.appendChild(lbl);
+          ul.appendChild(li);
+        });
+
+        qWrap.appendChild(ul);
+        form.appendChild(qWrap);
+      });
+    }
+
+    function validateInfo() {
+      const n = nameEl.value.trim();
+      const e = emailEl.value.trim();
+      if (!n || !e) return false;
+      return /.+@.+\\..+/.test(e);
+    }
+
+    document.getElementById('startBtn').addEventListener('click', () => {
+      if (!validateInfo()) {
+        alert('Please enter your full name and a valid email to begin.');
+        return;
+      }
+      infoCard.style.display = 'none';
+      quizCard.style.display = 'block';
+      renderQuiz();
+      window.scrollTo({ top: quizCard.offsetTop - 10, behavior: 'smooth' });
+    });
+
+    resetBtn.addEventListener('click', () => {
+      const form = document.getElementById('quizForm');
+      form.reset();
+    });
+
+    function computeScore() {
+      const form = document.getElementById('quizForm');
+      const data = new FormData(form);
+      let correct = 0;
+      QUESTIONS.forEach((q) => {
+        const given = data.get(q.id);
+        if (given !== null) {
+          const idx = parseInt(given, 10);
+          if (idx === q.correctIndex) correct += 1;
+        }
+      });
+      return { correct, total: QUESTIONS.length, pct: (correct / QUESTIONS.length) * 100 };
+    }
+
+    function summaryText(scoreObj) {
+      const name = nameEl.value.trim();
+      const email = emailEl.value.trim();
+      const license = licenseEl.value.trim();
+      const state = stateEl.value.trim();
+      const date = new Date().toISOString();
+      return [
+        `Course: Treating Sex & Pornography Addiction (3 CEUs)`,
+        `Course ID: COURSE_SEX-PORN-3CE`,
+        `Participant: ${name}`,
+        `Email: ${email}`,
+        license ? `License: ${license}` : null,
+        state ? `State: ${state}` : null,
+        `Score: ${scoreObj.correct}/${scoreObj.total} (${scoreObj.pct.toFixed(0)}%)`,
+        `Date: ${date}`
+      ].filter(Boolean).join('\\n');
+    }
+
+    function feedbackLink(scoreObj) {
+      const params = new URLSearchParams({
+        name: nameEl.value.trim(),
+        email: emailEl.value.trim(),
+        course: 'COURSE_SEX-PORN-3CE',
+        score: `${scoreObj.correct}/${scoreObj.total}`,
+        percent: `${scoreObj.pct.toFixed(0)}`
+      });
+      return `https://docs.google.com/forms/d/1NdpGJW94LxfBIrKtFvRUeMhiitlg2DyEdYjBWOMm3Qg/viewform?${params.toString()}`;
+    }
+
+    document.addEventListener('click', (e) => {
+      if (e.target && e.target.id === 'submitBtn') {
+        e.preventDefault();
+        const score = computeScore();
+        const passed = score.pct >= 70;
+        document.querySelector('#quizCard').style.display = 'none';
+        document.querySelector('#resultsCard').style.display = 'block';
+        document.querySelector('#scoreLine').textContent = `Your score: ${score.correct}/${score.total} (${score.pct.toFixed(0)}%)`;
+        document.querySelector('#passBlock').style.display = passed ? 'block' : 'none';
+        document.querySelector('#failBlock').style.display = passed ? 'none' : 'block';
+
+        const fbBtn = document.getElementById('feedbackBtn');
+        fbBtn.href = feedbackLink(score);
+
+        const sText = summaryText(score);
+        const copyNow = () => navigator.clipboard.writeText(sText).then(() => alert('Result summary copied.')).catch(() => alert('Copy failed.'));
+        const copyBtn = document.getElementById('copyBtn');
+        const copyBtn2 = document.getElementById('copyBtn2');
+        if (copyBtn) copyBtn.onclick = copyNow;
+        if (copyBtn2) copyBtn2.onclick = copyNow;
+
+        document.getElementById('retakeBtn').onclick = () => {
+          document.querySelector('#resultsCard').style.display = 'none';
+          document.querySelector('#quizCard').style.display = 'block';
+          document.getElementById('quizForm').reset();
+          window.scrollTo({ top: document.querySelector('#quizCard').offsetTop - 10, behavior: 'smooth' });
+        };
+      }
+    });
+  </script>
+</body>
+</html>
